@@ -1,6 +1,24 @@
-# BiblioTech
+I understand completely! You need a downloadable README.md file, not just the text in the chat. My apologies for not providing that option directly.
 
+Unfortunately, as an AI, I cannot directly create and provide a downloadable file to you. My responses are limited to text within our chat interface.
 
+However, I can give you the exact Markdown content again, and you can easily save it as a .md file on your computer:
+
+How to create the README.md file:
+
+Copy the entire text provided below.
+
+Open a plain text editor on your computer (like Notepad on Windows, TextEdit on macOS (make sure to save as plain text), or VS Code/Sublime Text/Atom).
+
+Paste the copied content into the new document.
+
+Save the file with the name README.md. Make sure the "Save as type" or "Format" option is set to "All Files" or "Plain Text" to avoid adding a .txt extension.
+
+Here is the complete and accurate Markdown content for your README.md file:
+
+Markdown
+
+# Sistema de Gestión de Biblioteca
 
 ¡Bienvenido al repositorio del Sistema de Gestión de Biblioteca! Esta es una plataforma digital diseñada para optimizar y automatizar los procesos clave de una biblioteca: el préstamo de materiales, el control de usuarios, la administración del catálogo y la aplicación de sus políticas internas.
 
@@ -8,44 +26,44 @@ El sistema está construido con una arquitectura web moderna, con un frontend en
 
 ## 📚 Características Principales
 
-Este sistema ofrece funcionalidades diferenciadas y seguras para tres roles de usuario:
+Este sistema ofrece funcionalidades diferenciadas y seguras para tres roles de usuario (Administrador, Bibliotecario y Lector), garantizando que cada uno acceda únicamente a las funcionalidades que le corresponden.
 
-* [cite_start]**Administrador:** Gestiona las cuentas de usuario del sistema (crear, editar, eliminar) y configura parámetros globales como los montos de multas y periodos de préstamo[cite: 33, 76, 77].
-* [cite_start]**Bibliotecario:** Encargado de las operaciones diarias, como la gestión del catálogo (añadir, editar, eliminar materiales), la gestión de préstamos y devoluciones, y la aplicación y seguimiento de multas[cite: 34, 81, 82, 83, 84, 85].
-* [cite_start]**Lector:** El usuario final que puede registrarse, acceder al sistema, solicitar préstamos, consultar el catálogo, renovar libros, pagar multas y visualizar su historial de actividades[cite: 35, 88, 89, 90, 91, 92].
+* **Administrador:** Encargado de la gestión de alto nivel de los usuarios del sistema, con la capacidad de agregar, editar, visualizar, eliminar y buscar cuentas. También establece parámetros globales como los montos de las multas por día de retraso y los periodos de préstamo estándar. [cite_start]No interviene en las operaciones diarias de la biblioteca. [cite: 18, 62, 63, 80, 82]
+* **Bibliotecario:** Responsable de los procesos operativos diarios, como la gestión de préstamos, la aplicación de multas, el control de la disponibilidad de material y la actualización del inventario en el catálogo. [cite_start]Utiliza el sistema como su principal herramienta de trabajo para interactuar con los lectores y el catálogo. [cite: 19, 66, 67, 68, 69, 70, 83, 84]
+* [cite_start]**Lector:** El usuario final, quien podrá registrarse, acceder al sistema, solicitar préstamos, consultar el catálogo, renovar libros, pagar multas y visualizar su historial de actividades. [cite: 20, 73, 74, 75, 76, 77, 78, 85, 86, 87]
 
 ### Funcionalidades Específicas:
 
-* [cite_start]**Gestión de Usuarios:** Incluye el registro, autenticación, edición y eliminación de cuentas de usuario[cite: 40].
-* [cite_start]**Gestión de Materiales:** Permite agregar, actualizar, eliminar y visualizar los diferentes materiales del catálogo (libros, revistas, etc.)[cite: 41].
-* [cite_start]**Gestión de Préstamos:** Contempla la solicitud, renovación, finalización y validación de los límites establecidos para los préstamos[cite: 42].
-* [cite_start]**Gestión de Multas:** Incluye la visualización y el registro del pago de multas[cite: 43].
-* [cite_start]**Consultas:** Facilita al usuario el acceso a su historial de préstamos y al catálogo de material disponible[cite: 44].
+* [cite_start]**Gestión de Usuarios:** Incluye el registro, autenticación, edición y eliminación de cuentas de usuario. [cite: 25]
+* [cite_start]**Gestión de Materiales:** Permite agregar, actualizar, eliminar y visualizar los diferentes materiales del catálogo (libros, revistas, etc.). [cite: 26]
+* [cite_start]**Gestión de Préstamos:** Contempla la solicitud, renovación, finalización y validación de los límites establecidos para los préstamos. [cite: 27]
+* [cite_start]**Gestión de Multas:** Incluye la visualización y el registro del pago de multas. [cite: 28]
+* [cite_start]**Consultas:** Facilita al usuario el acceso a su historial de préstamos y al catálogo de material disponible. [cite: 29]
 
 ## 🚀 Tecnologías Utilizadas
 
 * **Frontend:**
-    * [cite_start]**Next.js:** Framework de React para aplicaciones web[cite: 166].
-    * [cite_start]**TypeScript:** Lenguaje de programación que añade tipado estático a JavaScript[cite: 166].
-    * [cite_start]**Tailwind CSS:** Framework de CSS para un desarrollo rápido de interfaces de usuario[cite: 166].
+    * [cite_start]**Next.js:** Framework de React para aplicaciones web. [cite: 151]
+    * [cite_start]**TypeScript:** Lenguaje de programación que añade tipado estático a JavaScript. [cite: 151]
+    * [cite_start]**Tailwind CSS:** Framework de CSS para un desarrollo visual ágil. [cite: 151]
 * **Backend:**
-    * [cite_start]**Python:** Lenguaje de programación principal[cite: 166].
-    * [cite_start]**Flask:** Micro-framework web para la API REST[cite: 166].
-    * [cite_start]**SQLAlchemy:** ORM (Object-Relational Mapper) para la interacción con la base de datos[cite: 166].
+    * [cite_start]**Python:** Lenguaje de programación principal. [cite: 151]
+    * [cite_start]**Flask:** Micro-framework web, seleccionado por su simplicidad y velocidad de desarrollo. [cite: 151]
+    * [cite_start]**SQLAlchemy:** ORM (Object-Relational Mapper) para la interacción con la base de datos. [cite: 151]
     * **Flask-Migrate:** Herramienta para manejar migraciones de bases de datos.
     * **Bcrypt:** Para el hash de contraseñas.
     * **Flask-JWT-Extended:** Para la autenticación basada en JSON Web Tokens.
 * **Base de Datos:**
-    * [cite_start]**MySQL:** Sistema de gestión de base de datos relacional[cite: 166].
+    * [cite_start]**MySQL:** Sistema de gestión de base de datos relacional. [cite: 151]
 
 ## ⚙️ Requisitos del Sistema
 
 Antes de comenzar, asegúrate de tener instalado lo siguiente en tu entorno de desarrollo:
 
-* **Node.js** (versión 18 o superior) y **npm** o **pnpm** (recomendado)
-* **Python** (versión 3.9 o superior)
-* **MySQL Server** (versión 8.0 o superior)
-* **Git**
+* **Node.js** (versión 18 o superior) y **npm** o **pnpm** (recomendado): Necesario para el frontend con Next.js.
+* **Python** (versión 3.9 o superior): Necesario para el backend Flask.
+* **MySQL Server** (versión 8.0 o superior): La base de datos del sistema.
+* **Git:** Para clonar el repositorio.
 
 ## 🏁 Instalación y Ejecución
 
