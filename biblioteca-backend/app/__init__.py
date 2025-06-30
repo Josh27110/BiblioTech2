@@ -43,4 +43,7 @@ def create_app(config_class=Config):
     from app.admin.routes import admin_bp
     app.register_blueprint(admin_bp, url_prefix='/api/v1/admin')
 
+    from app.bibliotecario.routes import bibliotecario_bp
+    app.register_blueprint(bibliotecario_bp, url_prefix='/api/v1/bibliotecario')
+
     return app
