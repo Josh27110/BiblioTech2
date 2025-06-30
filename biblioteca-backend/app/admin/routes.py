@@ -271,6 +271,7 @@ def update_user(user_id):
         traceback.print_exc()
         return jsonify({"message": "Error interno del servidor al actualizar usuario", "error": str(e)}), 500
 
+
 # --- ENDPOINT: ELIMINAR USUARIO (DELETE) ---
 # Permite a un administrador eliminar un usuario existente.
 @admin_bp.route('/usuarios/<int:user_id>', methods=['DELETE'])
@@ -286,31 +287,30 @@ def delete_user(user_id):
 
     try:
         # Regla de negocio: No se puede eliminar un usuario con préstamos activos o multas pendientes.
-        # Asumo que las relaciones 'prestamos' y 'multas' en Usuario/Prestamo/Multa funcionan para esto.
-        # Si estas relaciones están configuradas correctamente con cascade delete, se borrarán.
-        # Sin embargo, la regla de negocio sugiere evitar la eliminación si hay activos.
+        # Ambas comprobaciones ahora se realizan filtrando las listas cargadas en Python.
 
         # Verificar préstamos activos
-        if hasattr(user_to_delete, 'prestamos') and user_to_delete.prestamos.filter_by(estado='Activo').first():
-            return jsonify({"message": "No se puede eliminar el usuario: tiene préstamos activos."}), 409
+        # Corregido: Filtrar la InstrumentedList en Python
+        if hasattr(user_to_delete, 'prestamos') and user_to_delete.prestamos:
+            active_loans = [p for p in user_to_delete.prestamos if p.estado == 'Activo']
+            if active_loans: # Si la lista de préstamos activos no está vacía
+                return jsonify({"message": "No se puede eliminar el usuario: tiene préstamos activos."}), 409
 
-        # Verificar multas pendientes (si Multa está relacionada directamente con Usuario o a través de Prestamo)
-        # Si Multa tiene id_usuario:
-        # if Multa.query.filter_by(id_usuario=user_id, estado='Pendiente').first():
-        #     return jsonify({"message": "No se puede eliminar el usuario: tiene multas pendientes."}), 409
-        
-        # Si Multa está relacionada solo con Prestamo (como en models.py):
-        # Necesitamos verificar si los préstamos del usuario tienen multas pendientes.
+        # Verificar multas pendientes a través de los préstamos
+        # Corregido: Iterar y sumar multas pendientes filtrando en Python
         has_pending_multas = False
         if hasattr(user_to_delete, 'prestamos') and user_to_delete.prestamos:
             for prestamo in user_to_delete.prestamos:
-                if hasattr(prestamo, 'multas') and prestamo.multas.filter_by(estado='Pendiente').first():
-                    has_pending_multas = True
-                    break
+                if hasattr(prestamo, 'multas') and prestamo.multas:
+                    pending_multas_for_loan = [m for m in prestamo.multas if m.estado == 'Pendiente']
+                    if pending_multas_for_loan:
+                        has_pending_multas = True
+                        break # Salir del bucle interno si se encuentra alguna multa pendiente
+        
         if has_pending_multas:
             return jsonify({"message": "No se puede eliminar el usuario: tiene multas pendientes."}), 409
 
-
+        # Si no tiene préstamos activos ni multas pendientes, proceder con la eliminación
         db.session.delete(user_to_delete) # Eliminar el usuario
         db.session.commit() # Guardar los cambios
 
@@ -319,5 +319,5 @@ def delete_user(user_id):
     except Exception as e:
         db.session.rollback()
         print(f"ERROR EN delete_user: {e}")
-        traceback.print_exc()
+        traceback.print_exc() # Imprimir el traceback completo
         return jsonify({"message": "Error interno del servidor al eliminar usuario", "error": str(e)}), 500
