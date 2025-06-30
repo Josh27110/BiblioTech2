@@ -1,3 +1,4 @@
+// components/auth/auth-context.tsx
 "use client"
 
 import type React from "react"
@@ -18,19 +19,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    console.log("AuthContext: Efecto de inicialización, llamando getCurrentUser.");
     const currentUser = getCurrentUser()
     setUser(currentUser)
     setIsLoading(false)
+    console.log("AuthContext: Inicialización completada. User:", currentUser, "IsLoading:", false);
   }, [])
 
-  const login = (user: User) => {
-    setUser(user)
+  const login = (loggedInUser: User) => {
+    console.log("AuthContext: Función login llamada, actualizando user en contexto:", loggedInUser);
+    setUser(loggedInUser);
+    // Asegurarse de que isLoading sea false si el login termina aquí
+    setIsLoading(false); 
   }
 
   const logout = () => {
-    authLogout()
+    console.log("AuthContext: Función logout llamada, limpiando contexto.");
+    authLogout() // Llama a la función de logout real que limpia localStorage
     setUser(null)
+    setIsLoading(false); // Asegurarse de que isLoading sea false después de logout
   }
+
+  console.log("AuthContext Render: Estado actual -> User:", user, "IsLoading:", isLoading);
 
   return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
 }

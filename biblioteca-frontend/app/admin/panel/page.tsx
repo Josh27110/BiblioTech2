@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react" // Importar useEffect y useCallback
 import { MainLayout } from "@/components/layout/main-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -34,130 +34,73 @@ import {
   Settings,
   UserCheck,
   Clock,
+  Loader2, // Importar Loader2 para spinners de carga
 } from "lucide-react"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { useAuth } from "@/components/auth/auth-context" // Importar useAuth
+import { useRouter } from "next/navigation" // Importar useRouter para redirección
+import { Skeleton } from "@/components/ui/skeleton"; // Importar Skeleton
 
-// Mock data para usuarios
-const mockUsuarios = [
-  {
-    id: 1,
-    numeroUsuario: "USR-001234",
-    nombre: "Juan",
-    apellidoPaterno: "Pérez",
-    apellidoMaterno: "García",
-    email: "juan.perez@email.com",
-    telefono: "+52 55 1234 5678",
-    direccion: "Av. Universidad 123, Col. Centro, CDMX",
-    fechaNacimiento: "1990-05-15",
-    genero: "masculino",
-    rol: "lector",
-    estado: "activo",
-    fechaRegistro: "2023-03-15",
-    ultimoAcceso: "2024-12-29 14:30",
-    prestamosActivos: 2,
-    prestamosHistoricos: 15,
-    multasPendientes: 0,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 2,
-    numeroUsuario: "USR-001235",
-    nombre: "María",
-    apellidoPaterno: "González",
-    apellidoMaterno: "López",
-    email: "maria.gonzalez@email.com",
-    telefono: "+52 55 2345 6789",
-    direccion: "Calle Reforma 456, Col. Roma, CDMX",
-    fechaNacimiento: "1985-08-22",
-    genero: "femenino",
-    rol: "bibliotecario",
-    estado: "activo",
-    fechaRegistro: "2022-11-08",
-    ultimoAcceso: "2024-12-29 16:45",
-    prestamosActivos: 0,
-    prestamosHistoricos: 0,
-    multasPendientes: 0,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 3,
-    numeroUsuario: "USR-001236",
-    nombre: "Carlos",
-    apellidoPaterno: "Rodríguez",
-    apellidoMaterno: "Martín",
-    email: "carlos.rodriguez@email.com",
-    telefono: "+52 55 3456 7890",
-    direccion: "Av. Insurgentes 789, Col. Condesa, CDMX",
-    fechaNacimiento: "1978-12-03",
-    genero: "masculino",
-    rol: "admin",
-    estado: "activo",
-    fechaRegistro: "2022-01-10",
-    ultimoAcceso: "2024-12-29 18:20",
-    prestamosActivos: 0,
-    prestamosHistoricos: 0,
-    multasPendientes: 0,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 4,
-    numeroUsuario: "USR-001237",
-    nombre: "Ana",
-    apellidoPaterno: "Martínez",
-    apellidoMaterno: "Sánchez",
-    email: "ana.martinez@email.com",
-    telefono: "+52 55 4567 8901",
-    direccion: "Calle Madero 321, Col. Centro, CDMX",
-    fechaNacimiento: "1992-07-18",
-    genero: "femenino",
-    rol: "lector",
-    estado: "suspendido",
-    fechaRegistro: "2023-06-20",
-    ultimoAcceso: "2024-12-25 10:15",
-    prestamosActivos: 1,
-    prestamosHistoricos: 8,
-    multasPendientes: 2,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 5,
-    numeroUsuario: "USR-001238",
-    nombre: "Luis",
-    apellidoPaterno: "Hernández",
-    apellidoMaterno: "Ruiz",
-    email: "luis.hernandez@email.com",
-    telefono: "+52 55 5678 9012",
-    direccion: "Av. Revolución 654, Col. San Ángel, CDMX",
-    fechaNacimiento: "1988-04-10",
-    genero: "masculino",
-    rol: "lector",
-    estado: "inactivo",
-    fechaRegistro: "2023-09-12",
-    ultimoAcceso: "2024-11-15 09:30",
-    prestamosActivos: 0,
-    prestamosHistoricos: 3,
-    multasPendientes: 1,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-]
+// Definir interfaces para los datos que esperamos del backend
+interface AdminSummaryData {
+  totalUsuarios: number;
+  usuariosActivos: number;
+  prestamosActivos: number;
+  multasPendientes: number;
+  // Puedes añadir más campos aquí si tu API los devuelve (ej. lectores, bibliotecarios, etc.)
+  usuariosSuspendidos?: number;
+  usuariosInactivos?: number;
+  lectores?: number;
+  bibliotecarios?: number;
+  administradores?: number;
+}
+
+interface UserData {
+  id: number;
+  numeroUsuario?: string; // Si tu backend lo devuelve
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno?: string; // Opcional
+  email: string;
+  telefono?: string; // Opcional
+  direccion?: string; // Opcional
+  fechaNacimiento?: string; // Opcional
+  genero?: string; // Opcional
+  rol: string; // 'lector', 'bibliotecario', 'admin'
+  estado: string; // 'activo', 'suspendido', 'inactivo'
+  fechaRegistro: string;
+  ultimoAcceso?: string; // Opcional
+  prestamosActivos: number;
+  prestamosHistoricos?: number; // Opcional
+  multasPendientes: number;
+  avatar?: string; // Opcional
+}
 
 export default function AdminPanelPage() {
+  const { user, isLoading: isAuthLoading } = useAuth(); // Obtener user y estado de autenticación
+  const router = useRouter();
+
+  const [summaryData, setSummaryData] = useState<AdminSummaryData | null>(null);
+  const [users, setUsers] = useState<UserData[]>([]); // Estado para la lista de usuarios real
+  const [isLoadingPanel, setIsLoadingPanel] = useState(true); // Estado de carga principal para el panel
+  const [errorPanel, setErrorPanel] = useState<string | null>(null); // Estado de error principal para el panel
+
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("todos")
   const [statusFilter, setStatusFilter] = useState("todos")
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null) // Tipado como UserData
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingAction, setIsLoadingAction] = useState(false) // Renombrado para acciones (add, edit, delete)
   const [successMessage, setSuccessMessage] = useState("")
   const [errorMessage, setErrorMessage] = useState("")
 
   const usersPerPage = 10
 
-  // Estado para nuevo usuario
+  // Estado para nuevo usuario (con tipos ajustados)
   const [newUser, setNewUser] = useState({
     nombre: "",
     apellidoPaterno: "",
@@ -167,49 +110,134 @@ export default function AdminPanelPage() {
     direccion: "",
     fechaNacimiento: "",
     genero: "",
-    rol: "lector",
+    rol: "lector", // Rol por defecto
     password: "",
     confirmPassword: "",
     enviarCredenciales: true,
   })
 
-  // Estado para editar usuario
-  const [editUser, setEditUser] = useState<any>({})
+  // Estado para editar usuario (con tipos ajustados)
+  const [editUser, setEditUser] = useState<Partial<UserData> & { password?: string, confirmPassword?: string }>({}) // Partial para permitir edición parcial
 
-  // Filtrar usuarios
-  const filteredUsers = mockUsuarios.filter((user) => {
+  // --- Funciones para fetching de datos ---
+  const fetchAdminSummary = useCallback(async () => {
+    console.log("AdminPanelPage: fetchAdminSummary iniciado.");
+    try {
+      setErrorPanel(null); // Limpiar errores
+      const token = localStorage.getItem("authToken");
+      if (!token) throw new Error("No se encontró el token de autenticación.");
+
+      const response = await fetch('http://localhost:5000/api/v1/admin/panel/summary', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || `Error ${response.status} al cargar el resumen del panel.`);
+      }
+      const data: AdminSummaryData = await response.json();
+      setSummaryData(data);
+      console.log("AdminPanelPage: Resumen de admin cargado con éxito.", data);
+    } catch (err: any) {
+      setErrorPanel(err.message);
+      console.error("AdminPanelPage: Error fetching admin summary:", err);
+    }
+  }, []);
+
+  const fetchUsers = useCallback(async () => {
+    console.log("AdminPanelPage: fetchUsers iniciado.");
+    try {
+      setErrorPanel(null); // Limpiar errores
+      const token = localStorage.getItem("authToken");
+      if (!token) throw new Error("No se encontró el token de autenticación.");
+
+      const response = await fetch('http://localhost:5000/api/v1/admin/usuarios', { // Endpoint para la lista de usuarios
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || `Error ${response.status} al cargar la lista de usuarios.`);
+      }
+      const data: UserData[] = await response.json();
+      setUsers(data);
+      console.log("AdminPanelPage: Lista de usuarios cargada con éxito.", data);
+    } catch (err: any) {
+      setErrorPanel(err.message);
+      console.error("AdminPanelPage: Error fetching users:", err);
+    }
+  }, []);
+
+  // --- useEffect para carga inicial de datos ---
+  useEffect(() => {
+    console.log("AdminPanelPage useEffect: user:", user, "isAuthLoading:", isAuthLoading); // Log al inicio del useEffect
+
+    // Si la autenticación aún está cargando, esperamos.
+    if (isAuthLoading) {
+      console.log("AdminPanelPage useEffect: AuthContext cargando, esperando.");
+      return;
+    }
+
+    // Si el usuario no es admin o no existe (esto debería ser manejado por MainLayout, pero es una doble verificación)
+    // Usamos 'Admin' para el rol
+    if (!user || user.rol !== 'Admin') {
+      console.log("AdminPanelPage useEffect: Usuario no es Admin o no existe, posible redirección de MainLayout.");
+      // No redirijas aquí si MainLayout ya lo hace, para evitar bucles.
+      // Si llegas aquí y no eres admin, significa que AuthGuard falló o no cubrió este caso.
+      // router.replace('/login'); // CUIDADO CON ESTO, PUEDE CAUSAR BUCLUES.
+      // Solo si estás seguro de que MainLayout NO redirige a otra parte.
+      return;
+    }
+
+    // Si llegamos aquí, el usuario es Admin y la autenticación está lista
+    console.log("AdminPanelPage useEffect: Usuario es Admin y autenticación lista, iniciando carga de datos del panel.");
+    const loadPanelData = async () => {
+      setIsLoadingPanel(true);
+      // Ejecutamos ambas fetches en paralelo para eficiencia
+      await Promise.all([
+        fetchAdminSummary(),
+        fetchUsers()
+      ]);
+      setIsLoadingPanel(false);
+      console.log("AdminPanelPage useEffect: Carga de datos del panel completada.");
+    };
+    loadPanelData();
+
+  }, [user, isAuthLoading, router, fetchAdminSummary, fetchUsers]); // Dependencias
+
+  // Filtrar usuarios (ahora usa `users` del estado)
+  const filteredUsers = users.filter((user) => {
+    const fullName = `${user.nombre} ${user.apellidoPaterno} ${user.apellidoMaterno || ''}`.toLowerCase();
     const matchesSearch =
-      user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.apellidoPaterno.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.apellidoMaterno.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      fullName.includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.numeroUsuario.toLowerCase().includes(searchTerm.toLowerCase())
+      (user.numeroUsuario && user.numeroUsuario.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesRole = roleFilter === "todos" || user.rol === roleFilter
-    const matchesStatus = statusFilter === "todos" || user.estado === statusFilter
+    const matchesRole = roleFilter === "todos" || user.rol.toLowerCase() === roleFilter; // .toLowerCase() para asegurar coincidencia
+    const matchesStatus = statusFilter === "todos" || user.estado.toLowerCase() === statusFilter; // .toLowerCase() para asegurar coincidencia
 
-    return matchesSearch && matchesRole && matchesStatus
-  })
+    return matchesSearch && matchesRole && matchesStatus;
+  });
 
   // Paginación
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage)
   const startIndex = (currentPage - 1) * usersPerPage
   const paginatedUsers = filteredUsers.slice(startIndex, startIndex + usersPerPage)
 
-  // Estadísticas
-  const stats = {
-    totalUsuarios: mockUsuarios.length,
-    usuariosActivos: mockUsuarios.filter((u) => u.estado === "activo").length,
-    usuariosSuspendidos: mockUsuarios.filter((u) => u.estado === "suspendido").length,
-    usuariosInactivos: mockUsuarios.filter((u) => u.estado === "inactivo").length,
-    lectores: mockUsuarios.filter((u) => u.rol === "lector").length,
-    bibliotecarios: mockUsuarios.filter((u) => u.rol === "bibliotecario").length,
-    administradores: mockUsuarios.filter((u) => u.rol === "admin").length,
-    prestamosActivos: mockUsuarios.reduce((sum, u) => sum + u.prestamosActivos, 0),
-    multasPendientes: mockUsuarios.reduce((sum, u) => sum + u.multasPendientes, 0),
-  }
+  // Estadísticas (ahora se usarán de summaryData)
+  // Asegúrate de que los valores por defecto sean 0 si summaryData es null
+  const currentStats = summaryData || {
+    totalUsuarios: 0,
+    usuariosActivos: 0,
+    prestamosActivos: 0,
+    multasPendientes: 0,
+    usuariosSuspendidos: 0,
+    usuariosInactivos: 0,
+    lectores: 0,
+    bibliotecarios: 0,
+    administradores: 0,
+  };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return "";
     return new Date(dateString).toLocaleDateString("es-ES", {
       year: "numeric",
       month: "short",
@@ -231,8 +259,8 @@ export default function AdminPanelPage() {
   }
 
   const getRoleBadge = (rol: string) => {
-    switch (rol) {
-      case "admin":
+    switch (rol.toLowerCase()) { // Usar toLowerCase para la comparación
+      case "admin": // Usamos "admin" aquí también
         return (
           <Badge variant="default" className="bg-red-100 text-red-800">
             Administrador
@@ -256,7 +284,7 @@ export default function AdminPanelPage() {
   }
 
   const getStatusBadge = (estado: string) => {
-    switch (estado) {
+    switch (estado.toLowerCase()) { // Usar toLowerCase para la comparación
       case "activo":
         return (
           <Badge variant="secondary" className="bg-green-100 text-green-800">
@@ -276,12 +304,12 @@ export default function AdminPanelPage() {
     }
   }
 
-  const openViewModal = (user: any) => {
+  const openViewModal = (user: UserData) => { // Tipado como UserData
     setSelectedUser(user)
     setIsViewModalOpen(true)
   }
 
-  const openEditModal = (user: any) => {
+  const openEditModal = (user: UserData) => { // Tipado como UserData
     setEditUser({ ...user })
     setIsEditModalOpen(true)
   }
@@ -296,7 +324,7 @@ export default function AdminPanelPage() {
       direccion: "",
       fechaNacimiento: "",
       genero: "",
-      rol: "lector",
+      rol: "lector", // Rol por defecto
       password: "",
       confirmPassword: "",
       enviarCredenciales: true,
@@ -304,7 +332,7 @@ export default function AdminPanelPage() {
     setIsAddModalOpen(true)
   }
 
-  const openDeleteModal = (user: any) => {
+  const openDeleteModal = (user: UserData) => { // Tipado como UserData
     setSelectedUser(user)
     setIsDeleteModalOpen(true)
   }
@@ -316,93 +344,147 @@ export default function AdminPanelPage() {
     setIsDeleteModalOpen(false)
     setSelectedUser(null)
     setEditUser({})
+    // Opcional: recargar datos del panel después de cerrar un modal de acción
+    if (!isLoadingPanel && !isAuthLoading) { // Solo si no hay otra carga en curso
+      console.log("AdminPanelPage: Recargando datos del panel después de cerrar modal.");
+      fetchAdminSummary();
+      fetchUsers();
+    }
   }
 
   const handleAddUser = async () => {
-    setIsLoading(true)
+    setIsLoadingAction(true) // Usar isLoadingAction
     setErrorMessage("")
     setSuccessMessage("")
 
     try {
-      // Validaciones
-      if (!newUser.nombre || !newUser.apellidoPaterno || !newUser.email) {
-        throw new Error("Los campos nombre, apellido paterno y email son obligatorios")
+      // Validaciones básicas
+      if (!newUser.nombre || !newUser.apellidoPaterno || !newUser.email || !newUser.password || !newUser.confirmPassword) {
+        throw new Error("Los campos nombre, apellido paterno, email y contraseña son obligatorios");
       }
 
       if (newUser.password !== newUser.confirmPassword) {
-        throw new Error("Las contraseñas no coinciden")
+        throw new Error("Las contraseñas no coinciden");
       }
 
-      if (newUser.telefono) {
-        const phoneRegex = /^\+52 \d{2} \d{4} \d{4}$/
-        if (!phoneRegex.test(newUser.telefono)) {
-          throw new Error("El formato del teléfono debe ser: +52 55 1234 5678")
-        }
+      // Preparar datos para la API (quitar confirmPassword)
+      const userDataToSend = { ...newUser };
+      delete userDataToSend.confirmPassword;
+      delete userDataToSend.enviarCredenciales; // Eliminar si no se usa en backend
+
+      const token = localStorage.getItem("authToken");
+      if (!token) throw new Error("No hay token de autenticación. Inicia sesión de nuevo.");
+
+      const response = await fetch('http://localhost:5000/api/v1/admin/usuarios', { // Asumiendo endpoint POST para crear usuarios
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(userDataToSend),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al crear el usuario en el backend.");
       }
+      
+      const responseData = await response.json(); // Si el backend devuelve el nuevo usuario o un mensaje
+      console.log("AdminPanelPage: Usuario añadido con éxito.", responseData);
 
-      // Simular llamada a API
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      setSuccessMessage(`Usuario ${newUser.nombre} ${newUser.apellidoPaterno} creado exitosamente`)
-      closeModals()
-      setTimeout(() => setSuccessMessage(""), 5000)
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Error al crear el usuario")
-      setTimeout(() => setErrorMessage(""), 5000)
+      setSuccessMessage(`Usuario ${newUser.nombre} ${newUser.apellidoPaterno} creado exitosamente`);
+      closeModals(); // Cierra el modal y refresca los datos del panel
+    } catch (error: any) {
+      setErrorMessage(error.message || "Error al crear el usuario");
+      console.error("AdminPanelPage: Error al añadir usuario:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoadingAction(false);
+      setTimeout(() => { setSuccessMessage(""); setErrorMessage(""); }, 5000); // Limpiar mensajes
     }
   }
 
   const handleEditUser = async () => {
-    setIsLoading(true)
-    setErrorMessage("")
-    setSuccessMessage("")
+    setIsLoadingAction(true);
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
-      // Validaciones
       if (!editUser.nombre || !editUser.apellidoPaterno || !editUser.email) {
-        throw new Error("Los campos nombre, apellido paterno y email son obligatorios")
+        throw new Error("Los campos nombre, apellido paterno y email son obligatorios");
       }
 
-      if (editUser.telefono) {
-        const phoneRegex = /^\+52 \d{2} \d{4} \d{4}$/
-        if (!phoneRegex.test(editUser.telefono)) {
-          throw new Error("El formato del teléfono debe ser: +52 55 1234 5678")
-        }
+      const token = localStorage.getItem("authToken");
+      if (!token) throw new Error("No hay token de autenticación. Inicia sesión de nuevo.");
+
+      // Enviar solo los campos que pueden ser editados, excluyendo id, numeroUsuario, etc.
+      const userDataToUpdate = { ...editUser };
+      // Eliminar campos que no se deben enviar en un PUT/PATCH
+      delete userDataToUpdate.id; 
+      delete userDataToUpdate.numeroUsuario;
+      delete userDataToUpdate.fechaRegistro;
+      delete userDataToUpdate.ultimoAcceso;
+      delete userDataToUpdate.prestamosActivos;
+      delete userDataToUpdate.prestamosHistoricos;
+      delete userDataToUpdate.multasPendientes;
+      delete userDataToUpdate.avatar;
+      delete userDataToUpdate.password; // La edición de contraseña suele ser un endpoint separado
+      delete userDataToUpdate.confirmPassword;
+
+
+      const response = await fetch(`http://localhost:5000/api/v1/admin/usuarios/${editUser.id}`, { // Asumiendo endpoint PUT para editar
+        method: 'PUT', // O 'PATCH'
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(userDataToUpdate),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al actualizar el usuario en el backend.");
       }
-
-      // Simular llamada a API
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      setSuccessMessage(`Usuario ${editUser.nombre} ${editUser.apellidoPaterno} actualizado exitosamente`)
-      closeModals()
-      setTimeout(() => setSuccessMessage(""), 5000)
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Error al actualizar el usuario")
-      setTimeout(() => setErrorMessage(""), 5000)
+      console.log("AdminPanelPage: Usuario editado con éxito.");
+      setSuccessMessage(`Usuario ${editUser.nombre} ${editUser.apellidoPaterno} actualizado exitosamente`);
+      closeModals();
+    } catch (error: any) {
+      setErrorMessage(error.message || "Error al actualizar el usuario");
+      console.error("AdminPanelPage: Error al editar usuario:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoadingAction(false);
+      setTimeout(() => { setSuccessMessage(""); setErrorMessage(""); }, 5000);
     }
   }
 
   const handleDeleteUser = async () => {
-    setIsLoading(true)
-    setErrorMessage("")
-    setSuccessMessage("")
+    setIsLoadingAction(true);
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
-      // Simular llamada a API
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const token = localStorage.getItem("authToken");
+      if (!token) throw new Error("No hay token de autenticación. Inicia sesión de nuevo.");
 
-      setSuccessMessage(`Usuario ${selectedUser.nombre} ${selectedUser.apellidoPaterno} eliminado exitosamente`)
-      closeModals()
-      setTimeout(() => setSuccessMessage(""), 5000)
-    } catch (error) {
-      setErrorMessage("Error al eliminar el usuario")
-      setTimeout(() => setErrorMessage(""), 5000)
+      const response = await fetch(`http://localhost:5000/api/v1/admin/usuarios/${selectedUser?.id}`, { // Asumiendo endpoint DELETE
+        method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al eliminar el usuario en el backend.");
+      }
+      console.log("AdminPanelPage: Usuario eliminado con éxito.");
+      setSuccessMessage(`Usuario ${selectedUser?.nombre} ${selectedUser?.apellidoPaterno} eliminado exitosamente`);
+      closeModals();
+    } catch (error: any) {
+      setErrorMessage(error.message || "Error al eliminar el usuario");
+      console.error("AdminPanelPage: Error al eliminar usuario:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoadingAction(false);
+      setTimeout(() => { setSuccessMessage(""); setErrorMessage(""); }, 5000);
     }
   }
 
@@ -453,6 +535,51 @@ export default function AdminPanelPage() {
     </div>
   )
 
+  // --- Renderizado ---
+  console.log("AdminPanelPage: Render. isAuthLoading:", isAuthLoading, "isLoadingPanel:", isLoadingPanel, "errorPanel:", errorPanel, "user:", user); // Log de renderizado
+
+  if (isAuthLoading || isLoadingPanel) {
+    console.log("AdminPanelPage: Mostrando loader del panel.");
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center gap-3 mb-8">
+            <Skeleton className="h-12 w-12 rounded-lg" />
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
+          </div>
+          <Skeleton className="h-10 w-full mb-4" />
+          <Skeleton className="h-[400px] w-full" />
+          <p>Cargando panel de administración...</p> {/* Mensaje para el usuario */}
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (errorPanel) {
+    console.log("AdminPanelPage: Mostrando error del panel.");
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8 text-center">
+          <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
+          <h1 className="mt-4 text-2xl font-bold text-red-500">Error al Cargar el Panel</h1>
+          <p className="text-muted-foreground">{errorPanel}</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
+            Intentar de Nuevo
+          </Button>
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
@@ -491,12 +618,12 @@ export default function AdminPanelPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Usuarios</p>
-                  <p className="text-2xl font-bold">{stats.totalUsuarios}</p>
+                  <p className="text-2xl font-bold">{currentStats.totalUsuarios}</p>
                 </div>
                 <Users className="h-8 w-8 text-blue-500" />
               </div>
               <div className="mt-2 text-xs text-muted-foreground">
-                {stats.lectores} lectores, {stats.bibliotecarios} bibliotecarios, {stats.administradores} admins
+                {currentStats.lectores ?? 'N/A'} lectores, {currentStats.bibliotecarios ?? 'N/A'} bibliotecarios, {currentStats.administradores ?? 'N/A'} admins
               </div>
             </CardContent>
           </Card>
@@ -506,12 +633,12 @@ export default function AdminPanelPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Usuarios Activos</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.usuariosActivos}</p>
+                  <p className="text-2xl font-bold text-green-600">{currentStats.usuariosActivos}</p>
                 </div>
                 <UserCheck className="h-8 w-8 text-green-500" />
               </div>
               <div className="mt-2 text-xs text-muted-foreground">
-                {stats.usuariosSuspendidos} suspendidos, {stats.usuariosInactivos} inactivos
+                {currentStats.usuariosSuspendidos ?? 'N/A'} suspendidos, {currentStats.usuariosInactivos ?? 'N/A'} inactivos
               </div>
             </CardContent>
           </Card>
@@ -521,7 +648,7 @@ export default function AdminPanelPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Préstamos Activos</p>
-                  <p className="text-2xl font-bold text-orange-600">{stats.prestamosActivos}</p>
+                  <p className="text-2xl font-bold text-orange-600">{currentStats.prestamosActivos}</p>
                 </div>
                 <Clock className="h-8 w-8 text-orange-500" />
               </div>
@@ -534,7 +661,7 @@ export default function AdminPanelPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Multas Pendientes</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.multasPendientes}</p>
+                  <p className="text-2xl font-bold text-red-600">{currentStats.multasPendientes}</p>
                 </div>
                 <AlertTriangle className="h-8 w-8 text-red-500" />
               </div>
@@ -653,8 +780,8 @@ export default function AdminPanelPage() {
                       <TableCell>{formatDate(user.fechaRegistro)}</TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <p>{formatDate(user.ultimoAcceso.split(" ")[0])}</p>
-                          <p className="text-xs text-muted-foreground">{user.ultimoAcceso.split(" ")[1]}</p>
+                          <p>{formatDate(user.ultimoAcceso?.split(" ")[0] || "")}</p>
+                          <p className="text-xs text-muted-foreground">{user.ultimoAcceso?.split(" ")[1] || ""}</p>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -750,7 +877,7 @@ export default function AdminPanelPage() {
                       <div className="flex items-center gap-4">
                         <Avatar className="h-16 w-16">
                           <AvatarImage src={selectedUser.avatar || "/placeholder.svg"} alt="Avatar" />
-                          <AvatarFallback className="text-lg">
+                          <AvatarFallback>
                             {selectedUser.nombre.charAt(0)}
                             {selectedUser.apellidoPaterno.charAt(0)}
                           </AvatarFallback>
@@ -778,7 +905,7 @@ export default function AdminPanelPage() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Fecha Nacimiento:</span>
-                          <span>{formatDate(selectedUser.fechaNacimiento)}</span>
+                          <span>{formatDate(selectedUser.fechaNacimiento || "")}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -835,7 +962,6 @@ export default function AdminPanelPage() {
                         <span>{selectedUser.prestamosHistoricos}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Multas Pendientes:</span>
                         <span className={selectedUser.multasPendientes > 0 ? "text-red-600 font-medium" : ""}>
                           {selectedUser.multasPendientes}
                         </span>
@@ -1004,8 +1130,8 @@ export default function AdminPanelPage() {
                 <Button variant="outline" onClick={closeModals}>
                   Cancelar
                 </Button>
-                <Button onClick={handleEditUser} disabled={isLoading}>
-                  {isLoading ? (
+                <Button onClick={handleEditUser} disabled={isLoadingAction}>
+                  {isLoadingAction ? (
                     <>
                       <Save className="h-4 w-4 mr-2 animate-spin" />
                       Guardando...
@@ -1178,8 +1304,8 @@ export default function AdminPanelPage() {
                 <Button variant="outline" onClick={closeModals}>
                   Cancelar
                 </Button>
-                <Button onClick={handleAddUser} disabled={isLoading}>
-                  {isLoading ? (
+                <Button onClick={handleAddUser} disabled={isLoadingAction}>
+                  {isLoadingAction ? (
                     <>
                       <UserPlus className="h-4 w-4 mr-2 animate-spin" />
                       Creando...
@@ -1229,8 +1355,8 @@ export default function AdminPanelPage() {
                 <Button variant="outline" onClick={closeModals}>
                   Cancelar
                 </Button>
-                <Button variant="destructive" onClick={handleDeleteUser} disabled={isLoading}>
-                  {isLoading ? (
+                <Button variant="destructive" onClick={handleDeleteUser} disabled={isLoadingAction}>
+                  {isLoadingAction ? (
                     <>
                       <Trash2 className="h-4 w-4 mr-2 animate-spin" />
                       Eliminando...

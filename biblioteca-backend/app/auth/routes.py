@@ -1,47 +1,18 @@
-# /app/auth/routes.py
+# app/auth/routes.py
 
 from flask import Blueprint, request, jsonify
-from app.models import db, Usuario
-from flask_jwt_extended import create_access_token
+from app.models import db, Usuario # Asegúrate de que Usuario está importado
+from flask_jwt_extended import create_access_token # Asegúrate de que create_access_token está importado
 from datetime import datetime
+# Importaciones necesarias para el hashing de contraseña si Usuario.set_password/check_password las usan
+# from app import bcrypt # Si tu modelo Usuario usa bcrypt de la instancia global
 
 auth_bp = Blueprint('auth_bp', __name__)
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
-
-    if not data or not data.get('email') or not data.get('password'):
-        return jsonify({"message": "Faltan el email y la contraseña"}), 400
-
-    if Usuario.query.filter_by(email=data['email']).first():
-        return jsonify({"message": "El correo electrónico ya está registrado"}), 409
-
-    try:
-        # Extraemos la contraseña para manejarla por separado
-        password = data.pop('password')
-        
-        # Convertimos la fecha de string a objeto Date si existe
-        if 'fecha_nacimiento' in data and data['fecha_nacimiento']:
-            data['fecha_nacimiento'] = datetime.strptime(data['fecha_nacimiento'], '%Y-%m-%d').date()
-
-        # --- LÓGICA CORREGIDA Y SIMPLIFICADA ---
-        # Creamos el usuario pasando todos los datos del formulario directamente.
-        # SQLAlchemy asignará automáticamente cada campo al modelo correspondiente.
-        nuevo_usuario = Usuario(**data, rol_id=1) # rol_id=1 para Lector
-        
-        # Encriptamos y asignamos la contraseña
-        nuevo_usuario.set_password(password)
-        
-        db.session.add(nuevo_usuario)
-        db.session.commit()
-        
-        return jsonify({"message": "Usuario registrado exitosamente"}), 201
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"message": "Ocurrió un error al registrar el usuario", "error": str(e)}), 500
-
+    # ... (tu código de registro existente)
+    pass # Reemplaza con tu código real de registro
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -51,13 +22,19 @@ def login():
 
     user = Usuario.query.filter_by(email=data.get('email')).first()
 
+    # Asumo que user.check_password está bien definido en tu modelo Usuario
+    # y maneja el hashing de contraseña.
     if user and user.check_password(data.get('password')):
-        access_token = create_access_token(identity=user.id, additional_claims={'rol': user.rol.nombre})
+        # --- CAMBIO CRUCIAL AQUÍ ---
+        # Convertimos user.id a string para la identidad del token
+        access_token = create_access_token(identity=str(user.id), additional_claims={'rol': user.rol.nombre})
+        # --- FIN DEL CAMBIO ---
+
         return jsonify(
             access_token=access_token,
             user={
                 "id": user.id,
-                "rol": user.rol.nombre,
+                "rol": user.rol.nombre, # Asumo que user.rol es un objeto con un atributo 'nombre'
                 "nombreCompleto": f"{user.nombre} {user.apellido_paterno}".strip()
             }
         ), 200

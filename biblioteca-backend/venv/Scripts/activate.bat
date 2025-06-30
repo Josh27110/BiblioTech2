@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=C:\Users\ovied\Desktop\SistemaBibliotecario\biblioteca-backend\venv
+set VIRTUAL_ENV=C:\Users\ovied\Desktop\BT\BiblioTech2\biblioteca-backend\venv
 
 if not defined PROMPT set PROMPT=$P$G
 

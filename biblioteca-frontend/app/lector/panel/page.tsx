@@ -1,6 +1,6 @@
 "use client"; // Necesario para usar hooks como useState y useEffect
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/auth/auth-context";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, History, Clock, AlertTriangle, Calendar, Search, ArrowRight, User } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Importar useRouter para redirección si el usuario no está autenticado
 
 // Definimos una interfaz para los datos que esperamos del backend
 interface SummaryData {
@@ -20,46 +21,66 @@ interface SummaryData {
 }
 
 export default function LectorPanelPage() {
-  const { user } = useAuth(); // Obtenemos el usuario del contexto
+  const { user, isLoading: isAuthLoading } = useAuth(); // Obtenemos el usuario y el estado de carga del contexto
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingPanelData, setIsLoadingPanelData] = useState(true); // Renombrado para evitar conflicto con isAuthLoading
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter(); // Inicializar router
+
+  // Usamos useCallback para memoizar la función de fetch
+  const fetchPanelSummary = useCallback(async () => {
+    // Si la autenticación aún está cargando o no hay usuario, salimos.
+    // El useEffect de abajo se encargará de esto una vez user/isAuthLoading se actualicen.
+    if (isAuthLoading || !user) {
+      setIsLoadingPanelData(true); // Mantener el estado de carga
+      return; 
+    }
+
+    try {
+      setIsLoadingPanelData(true); // Siempre iniciar carga al intentar fetch
+      setError(null); // Limpiar errores previos
+
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        // Si no hay token después de que useAuth.user está presente, algo salió mal
+        throw new Error("No se encontró el token de autenticación para cargar el panel.");
+      }
+
+      const response = await fetch('http://localhost:5000/api/v1/lector/panel/summary', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error ${response.status}: No se pudo obtener la información del panel.`);
+      }
+
+      const data: SummaryData = await response.json();
+      setSummaryData(data);
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Error al obtener el resumen del panel:", err);
+    } finally {
+      setIsLoadingPanelData(false);
+    }
+  }, [user, isAuthLoading]); // Dependencias: user y isAuthLoading
 
   useEffect(() => {
-    // Función para obtener los datos del panel desde la API
-    const fetchPanelSummary = async () => {
-      try {
-        setIsLoading(true);
-        const token = localStorage.getItem("authToken");
-
-        if (!token) {
-          throw new Error("No se encontró el token de autenticación.");
-        }
-
-        const response = await fetch('http://localhost:5000/api/v1/lector/panel/summary', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "No se pudo obtener la información del panel.");
-        }
-
-        const data: SummaryData = await response.json();
-        setSummaryData(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPanelSummary();
-  }, []); // El array vacío [] asegura que el efecto se ejecute solo una vez
+    // Redireccionar si no hay usuario después de que la autenticación terminó de cargar
+    if (!isAuthLoading && !user) {
+      router.push('/login');
+      return;
+    }
+    // Si hay usuario y ya no estamos cargando autenticación, intentamos cargar los datos del panel
+    if (user && !isAuthLoading) {
+      fetchPanelSummary();
+    }
+  }, [user, isAuthLoading, fetchPanelSummary, router]); // Depende de user, isAuthLoading, fetchPanelSummary y router
 
   // El arreglo de opciones ahora es una variable dentro del componente
   // para que pueda acceder a `summaryData`
@@ -115,7 +136,8 @@ export default function LectorPanelPage() {
   ];
   
   // Renderiza un estado de carga mientras se obtienen los datos
-  if (isLoading) {
+  // Incluimos isAuthLoading para asegurar que esperamos la autenticación
+  if (isAuthLoading || isLoadingPanelData) {
     return (
       <MainLayout>
         <div className="container mx-auto px-4 py-8">
@@ -145,9 +167,12 @@ export default function LectorPanelPage() {
           <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
           <h1 className="mt-4 text-2xl font-bold text-red-500">Error al Cargar el Panel</h1>
           <p className="text-muted-foreground">{error}</p>
-          <Button onClick={() => window.location.reload()} className="mt-4">
-            Intentar de Nuevo
-          </Button>
+          {/* Botón para intentar de nuevo, solo si no es un error de autenticación explícito */}
+          {error !== "Necesitas iniciar sesión para ver este panel." && (
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Intentar de Nuevo
+            </Button>
+          )}
         </div>
       </MainLayout>
     );
@@ -164,7 +189,8 @@ export default function LectorPanelPage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold">Panel del Lector</h1>
-              <p className="text-muted-foreground">Bienvenido, {summaryData?.nombreCompleto || 'Lector'}</p>
+              {/* Usa summaryData.nombreCompleto si está disponible, si no, el del user del contexto */}
+              <p className="text-muted-foreground">Bienvenido, {summaryData?.nombreCompleto || user?.nombreCompleto || 'Lector'}</p>
             </div>
           </div>
         </div>
