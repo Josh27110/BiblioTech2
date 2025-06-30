@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react" // Importar useEffect y useCallback
+import { useState, useEffect, useCallback } from "react"
 import { MainLayout } from "@/components/layout/main-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -34,12 +34,12 @@ import {
   Settings,
   UserCheck,
   Clock,
-  Loader2, // Importar Loader2 para spinners de carga
+  Loader2,
 } from "lucide-react"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { useAuth } from "@/components/auth/auth-context" // Importar useAuth
-import { useRouter } from "next/navigation" // Importar useRouter para redirección
-import { Skeleton } from "@/components/ui/skeleton"; // Importar Skeleton
+import { useAuth } from "@/components/auth/auth-context"
+import { useRouter } from "next/navigation"
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Definir interfaces para los datos que esperamos del backend
 interface AdminSummaryData {
@@ -47,7 +47,6 @@ interface AdminSummaryData {
   usuariosActivos: number;
   prestamosActivos: number;
   multasPendientes: number;
-  // Puedes añadir más campos aquí si tu API los devuelve (ej. lectores, bibliotecarios, etc.)
   usuariosSuspendidos?: number;
   usuariosInactivos?: number;
   lectores?: number;
@@ -57,50 +56,49 @@ interface AdminSummaryData {
 
 interface UserData {
   id: number;
-  numeroUsuario?: string; // Si tu backend lo devuelve
+  numeroUsuario?: string;
   nombre: string;
   apellidoPaterno: string;
-  apellidoMaterno?: string; // Opcional
+  apellidoMaterno?: string;
   email: string;
-  telefono?: string; // Opcional
-  direccion?: string; // Opcional
-  fechaNacimiento?: string; // Opcional
-  genero?: string; // Opcional
+  telefono?: string;
+  direccion?: string;
+  fechaNacimiento?: string;
+  genero?: string;
   rol: string; // 'lector', 'bibliotecario', 'admin'
   estado: string; // 'activo', 'suspendido', 'inactivo'
   fechaRegistro: string;
-  ultimoAcceso?: string; // Opcional
+  ultimoAcceso?: string;
   prestamosActivos: number;
-  prestamosHistoricos?: number; // Opcional
+  prestamosHistoricos?: number;
   multasPendientes: number;
-  avatar?: string; // Opcional
+  avatar?: string;
 }
 
 export default function AdminPanelPage() {
-  const { user, isLoading: isAuthLoading } = useAuth(); // Obtener user y estado de autenticación
+  const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
 
   const [summaryData, setSummaryData] = useState<AdminSummaryData | null>(null);
-  const [users, setUsers] = useState<UserData[]>([]); // Estado para la lista de usuarios real
-  const [isLoadingPanel, setIsLoadingPanel] = useState(true); // Estado de carga principal para el panel
-  const [errorPanel, setErrorPanel] = useState<string | null>(null); // Estado de error principal para el panel
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [isLoadingPanel, setIsLoadingPanel] = useState(true);
+  const [errorPanel, setErrorPanel] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("todos")
   const [statusFilter, setStatusFilter] = useState("todos")
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedUser, setSelectedUser] = useState<UserData | null>(null) // Tipado como UserData
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [isLoadingAction, setIsLoadingAction] = useState(false) // Renombrado para acciones (add, edit, delete)
+  const [isLoadingAction, setIsLoadingAction] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
   const [errorMessage, setErrorMessage] = useState("")
 
   const usersPerPage = 10
 
-  // Estado para nuevo usuario (con tipos ajustados)
   const [newUser, setNewUser] = useState({
     nombre: "",
     apellidoPaterno: "",
@@ -110,20 +108,19 @@ export default function AdminPanelPage() {
     direccion: "",
     fechaNacimiento: "",
     genero: "",
-    rol: "lector", // Rol por defecto
+    rol: "lector",
     password: "",
     confirmPassword: "",
     enviarCredenciales: true,
   })
 
-  // Estado para editar usuario (con tipos ajustados)
-  const [editUser, setEditUser] = useState<Partial<UserData> & { password?: string, confirmPassword?: string }>({}) // Partial para permitir edición parcial
+  const [editUser, setEditUser] = useState<Partial<UserData> & { password?: string, confirmPassword?: string }>({})
 
   // --- Funciones para fetching de datos ---
   const fetchAdminSummary = useCallback(async () => {
     console.log("AdminPanelPage: fetchAdminSummary iniciado.");
     try {
-      setErrorPanel(null); // Limpiar errores
+      setErrorPanel(null);
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("No se encontró el token de autenticación.");
 
@@ -146,16 +143,16 @@ export default function AdminPanelPage() {
   const fetchUsers = useCallback(async () => {
     console.log("AdminPanelPage: fetchUsers iniciado.");
     try {
-      setErrorPanel(null); // Limpiar errores
+      setErrorPanel(null);
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("No se encontró el token de autenticación.");
 
-      const response = await fetch('http://localhost:5000/api/v1/admin/usuarios', { // Endpoint para la lista de usuarios
+      const response = await fetch('http://localhost:5000/api/v1/admin/usuarios', {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.message || `Error ${response.status} al cargar la lista de usuarios.`);
+        throw new Error(errData.message || `Error ${response.status}: No se pudo cargar la lista de usuarios.`);
       }
       const data: UserData[] = await response.json();
       setUsers(data);
@@ -168,30 +165,21 @@ export default function AdminPanelPage() {
 
   // --- useEffect para carga inicial de datos ---
   useEffect(() => {
-    console.log("AdminPanelPage useEffect: user:", user, "isAuthLoading:", isAuthLoading); // Log al inicio del useEffect
+    console.log("AdminPanelPage useEffect: user:", user, "isAuthLoading:", isAuthLoading);
 
-    // Si la autenticación aún está cargando, esperamos.
     if (isAuthLoading) {
       console.log("AdminPanelPage useEffect: AuthContext cargando, esperando.");
       return;
     }
 
-    // Si el usuario no es admin o no existe (esto debería ser manejado por MainLayout, pero es una doble verificación)
-    // Usamos 'Admin' para el rol
     if (!user || user.rol !== 'Admin') {
       console.log("AdminPanelPage useEffect: Usuario no es Admin o no existe, posible redirección de MainLayout.");
-      // No redirijas aquí si MainLayout ya lo hace, para evitar bucles.
-      // Si llegas aquí y no eres admin, significa que AuthGuard falló o no cubrió este caso.
-      // router.replace('/login'); // CUIDADO CON ESTO, PUEDE CAUSAR BUCLUES.
-      // Solo si estás seguro de que MainLayout NO redirige a otra parte.
       return;
     }
 
-    // Si llegamos aquí, el usuario es Admin y la autenticación está lista
     console.log("AdminPanelPage useEffect: Usuario es Admin y autenticación lista, iniciando carga de datos del panel.");
     const loadPanelData = async () => {
       setIsLoadingPanel(true);
-      // Ejecutamos ambas fetches en paralelo para eficiencia
       await Promise.all([
         fetchAdminSummary(),
         fetchUsers()
@@ -201,7 +189,7 @@ export default function AdminPanelPage() {
     };
     loadPanelData();
 
-  }, [user, isAuthLoading, router, fetchAdminSummary, fetchUsers]); // Dependencias
+  }, [user, isAuthLoading, router, fetchAdminSummary, fetchUsers]);
 
   // Filtrar usuarios (ahora usa `users` del estado)
   const filteredUsers = users.filter((user) => {
@@ -211,8 +199,8 @@ export default function AdminPanelPage() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.numeroUsuario && user.numeroUsuario.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesRole = roleFilter === "todos" || user.rol.toLowerCase() === roleFilter; // .toLowerCase() para asegurar coincidencia
-    const matchesStatus = statusFilter === "todos" || user.estado.toLowerCase() === statusFilter; // .toLowerCase() para asegurar coincidencia
+    const matchesRole = roleFilter === "todos" || user.rol.toLowerCase() === roleFilter;
+    const matchesStatus = statusFilter === "todos" || user.estado.toLowerCase() === statusFilter;
 
     return matchesSearch && matchesRole && matchesStatus;
   });
@@ -223,7 +211,6 @@ export default function AdminPanelPage() {
   const paginatedUsers = filteredUsers.slice(startIndex, startIndex + usersPerPage)
 
   // Estadísticas (ahora se usarán de summaryData)
-  // Asegúrate de que los valores por defecto sean 0 si summaryData es null
   const currentStats = summaryData || {
     totalUsuarios: 0,
     usuariosActivos: 0,
@@ -259,8 +246,8 @@ export default function AdminPanelPage() {
   }
 
   const getRoleBadge = (rol: string) => {
-    switch (rol.toLowerCase()) { // Usar toLowerCase para la comparación
-      case "admin": // Usamos "admin" aquí también
+    switch (rol.toLowerCase()) {
+      case "admin":
         return (
           <Badge variant="default" className="bg-red-100 text-red-800">
             Administrador
@@ -284,7 +271,7 @@ export default function AdminPanelPage() {
   }
 
   const getStatusBadge = (estado: string) => {
-    switch (estado.toLowerCase()) { // Usar toLowerCase para la comparación
+    switch (estado.toLowerCase()) {
       case "activo":
         return (
           <Badge variant="secondary" className="bg-green-100 text-green-800">
@@ -304,12 +291,12 @@ export default function AdminPanelPage() {
     }
   }
 
-  const openViewModal = (user: UserData) => { // Tipado como UserData
+  const openViewModal = (user: UserData) => {
     setSelectedUser(user)
     setIsViewModalOpen(true)
   }
 
-  const openEditModal = (user: UserData) => { // Tipado como UserData
+  const openEditModal = (user: UserData) => {
     setEditUser({ ...user })
     setIsEditModalOpen(true)
   }
@@ -324,7 +311,7 @@ export default function AdminPanelPage() {
       direccion: "",
       fechaNacimiento: "",
       genero: "",
-      rol: "lector", // Rol por defecto
+      rol: "lector",
       password: "",
       confirmPassword: "",
       enviarCredenciales: true,
@@ -332,7 +319,7 @@ export default function AdminPanelPage() {
     setIsAddModalOpen(true)
   }
 
-  const openDeleteModal = (user: UserData) => { // Tipado como UserData
+  const openDeleteModal = (user: UserData) => {
     setSelectedUser(user)
     setIsDeleteModalOpen(true)
   }
@@ -345,7 +332,7 @@ export default function AdminPanelPage() {
     setSelectedUser(null)
     setEditUser({})
     // Opcional: recargar datos del panel después de cerrar un modal de acción
-    if (!isLoadingPanel && !isAuthLoading) { // Solo si no hay otra carga en curso
+    if (!isLoadingPanel && !isAuthLoading) {
       console.log("AdminPanelPage: Recargando datos del panel después de cerrar modal.");
       fetchAdminSummary();
       fetchUsers();
@@ -353,12 +340,12 @@ export default function AdminPanelPage() {
   }
 
   const handleAddUser = async () => {
-    setIsLoadingAction(true) // Usar isLoadingAction
+    setIsLoadingAction(true)
     setErrorMessage("")
     setSuccessMessage("")
 
     try {
-      // Validaciones básicas
+      // Validaciones básicas del frontend
       if (!newUser.nombre || !newUser.apellidoPaterno || !newUser.email || !newUser.password || !newUser.confirmPassword) {
         throw new Error("Los campos nombre, apellido paterno, email y contraseña son obligatorios");
       }
@@ -367,15 +354,27 @@ export default function AdminPanelPage() {
         throw new Error("Las contraseñas no coinciden");
       }
 
-      // Preparar datos para la API (quitar confirmPassword)
-      const userDataToSend = { ...newUser };
-      delete userDataToSend.confirmPassword;
-      delete userDataToSend.enviarCredenciales; // Eliminar si no se usa en backend
+      // Preparar datos para la API
+      const userDataToSend = {
+        nombre: newUser.nombre,
+        apellidoPaterno: newUser.apellidoPaterno,
+        apellidoMaterno: newUser.apellidoMaterno || null,
+        email: newUser.email,
+        password: newUser.password,
+        rol: newUser.rol,
+        
+        fechaNacimiento: newUser.fechaNacimiento || null,
+        telefono: newUser.telefono || null,
+        direccion: newUser.direccion || null,
+        genero: newUser.genero || null,
+      };
 
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("No hay token de autenticación. Inicia sesión de nuevo.");
 
-      const response = await fetch('http://localhost:5000/api/v1/admin/usuarios', { // Asumiendo endpoint POST para crear usuarios
+      console.log("handleAddUser: Enviando datos al backend:", userDataToSend);
+
+      const response = await fetch('http://localhost:5000/api/v1/admin/usuarios', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -386,20 +385,21 @@ export default function AdminPanelPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Error al crear el usuario en el backend.");
+        console.error("handleAddUser: Error de respuesta del backend:", errorData);
+        throw new Error(errorData.message || `Error ${response.status}: No se pudo crear el usuario.`);
       }
       
-      const responseData = await response.json(); // Si el backend devuelve el nuevo usuario o un mensaje
-      console.log("AdminPanelPage: Usuario añadido con éxito.", responseData);
+      const responseData = await response.json();
+      console.log("handleAddUser: Usuario añadido con éxito. Respuesta:", responseData);
 
-      setSuccessMessage(`Usuario ${newUser.nombre} ${newUser.apellidoPaterno} creado exitosamente`);
-      closeModals(); // Cierra el modal y refresca los datos del panel
+      setSuccessMessage(`Usuario ${newUser.nombre} ${newUser.apellidoPaterno} creado exitosamente. ID: ${responseData.user_id}`);
+      closeModals();
     } catch (error: any) {
       setErrorMessage(error.message || "Error al crear el usuario");
-      console.error("AdminPanelPage: Error al añadir usuario:", error);
+      console.error("handleAddUser: Error en el proceso:", error);
     } finally {
       setIsLoadingAction(false);
-      setTimeout(() => { setSuccessMessage(""); setErrorMessage(""); }, 5000); // Limpiar mensajes
+      setTimeout(() => { setSuccessMessage(""); setErrorMessage(""); }, 5000);
     }
   }
 
@@ -409,6 +409,9 @@ export default function AdminPanelPage() {
     setSuccessMessage("");
 
     try {
+      if (!editUser.id) {
+        throw new Error("ID de usuario no encontrado para editar.");
+      }
       if (!editUser.nombre || !editUser.apellidoPaterno || !editUser.email) {
         throw new Error("Los campos nombre, apellido paterno y email son obligatorios");
       }
@@ -417,22 +420,26 @@ export default function AdminPanelPage() {
       if (!token) throw new Error("No hay token de autenticación. Inicia sesión de nuevo.");
 
       // Enviar solo los campos que pueden ser editados, excluyendo id, numeroUsuario, etc.
-      const userDataToUpdate = { ...editUser };
-      // Eliminar campos que no se deben enviar en un PUT/PATCH
-      delete userDataToUpdate.id; 
-      delete userDataToUpdate.numeroUsuario;
-      delete userDataToUpdate.fechaRegistro;
-      delete userDataToUpdate.ultimoAcceso;
-      delete userDataToUpdate.prestamosActivos;
-      delete userDataToUpdate.prestamosHistoricos;
-      delete userDataToUpdate.multasPendientes;
-      delete userDataToUpdate.avatar;
-      delete userDataToUpdate.password; // La edición de contraseña suele ser un endpoint separado
-      delete userDataToUpdate.confirmPassword;
+      const userDataToUpdate: Partial<UserData> = {
+        nombre: editUser.nombre,
+        apellidoPaterno: editUser.apellidoPaterno,
+        apellidoMaterno: editUser.apellidoMaterno || null,
+        email: editUser.email,
+        telefono: editUser.telefono || null,
+        direccion: editUser.direccion || null,
+        fechaNacimiento: editUser.fechaNacimiento || null,
+        genero: editUser.genero || null,
+        // Asegurarse de que el rol coincida con la base de datos si se edita
+        // Si el frontend usa "Administrador" en el select, y el backend espera "Admin", convertirlo.
+        rol: editUser.rol === 'Administrador' ? 'Admin' : editUser.rol, // Convertir si el select del frontend lo muestra diferente
+        estado: editUser.estado // Asumiendo que el campo estado existe y es editable
+      };
 
 
-      const response = await fetch(`http://localhost:5000/api/v1/admin/usuarios/${editUser.id}`, { // Asumiendo endpoint PUT para editar
-        method: 'PUT', // O 'PATCH'
+      console.log("handleEditUser: Enviando datos de actualización para ID:", editUser.id, "Datos:", userDataToUpdate);
+
+      const response = await fetch(`http://localhost:5000/api/v1/admin/usuarios/${editUser.id}`, {
+        method: 'PUT', // O 'PATCH' si tu backend soporta PATCH para actualizaciones parciales
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
@@ -442,9 +449,11 @@ export default function AdminPanelPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Error al actualizar el usuario en el backend.");
+        console.error("handleEditUser: Error de respuesta del backend:", errorData);
+        throw new Error(errorData.message || `Error ${response.status}: No se pudo actualizar el usuario.`);
       }
-      console.log("AdminPanelPage: Usuario editado con éxito.");
+
+      console.log("AdminPanelPage: Usuario editado con éxito. ID:", editUser.id);
       setSuccessMessage(`Usuario ${editUser.nombre} ${editUser.apellidoPaterno} actualizado exitosamente`);
       closeModals();
     } catch (error: any) {
@@ -462,10 +471,16 @@ export default function AdminPanelPage() {
     setSuccessMessage("");
 
     try {
+      if (!selectedUser?.id) {
+        throw new Error("ID de usuario no encontrado para eliminar.");
+      }
+
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("No hay token de autenticación. Inicia sesión de nuevo.");
 
-      const response = await fetch(`http://localhost:5000/api/v1/admin/usuarios/${selectedUser?.id}`, { // Asumiendo endpoint DELETE
+      console.log("handleDeleteUser: Enviando solicitud de eliminación para ID:", selectedUser.id);
+
+      const response = await fetch(`http://localhost:5000/api/v1/admin/usuarios/${selectedUser.id}`, {
         method: 'DELETE',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -474,10 +489,12 @@ export default function AdminPanelPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Error al eliminar el usuario en el backend.");
+        console.error("handleDeleteUser: Error de respuesta del backend:", errorData);
+        throw new Error(errorData.message || `Error ${response.status}: No se pudo eliminar el usuario.`);
       }
-      console.log("AdminPanelPage: Usuario eliminado con éxito.");
-      setSuccessMessage(`Usuario ${selectedUser?.nombre} ${selectedUser?.apellidoPaterno} eliminado exitosamente`);
+
+      console.log("AdminPanelPage: Usuario eliminado con éxito. ID:", selectedUser.id);
+      setSuccessMessage(`Usuario ${selectedUser.nombre} ${selectedUser.apellidoPaterno} eliminado exitosamente`);
       closeModals();
     } catch (error: any) {
       setErrorMessage(error.message || "Error al eliminar el usuario");
@@ -536,7 +553,7 @@ export default function AdminPanelPage() {
   )
 
   // --- Renderizado ---
-  console.log("AdminPanelPage: Render. isAuthLoading:", isAuthLoading, "isLoadingPanel:", isLoadingPanel, "errorPanel:", errorPanel, "user:", user); // Log de renderizado
+  console.log("AdminPanelPage: Render. isAuthLoading:", isAuthLoading, "isLoadingPanel:", isLoadingPanel, "errorPanel:", errorPanel, "user:", user);
 
   if (isAuthLoading || isLoadingPanel) {
     console.log("AdminPanelPage: Mostrando loader del panel.");
@@ -558,7 +575,7 @@ export default function AdminPanelPage() {
           </div>
           <Skeleton className="h-10 w-full mb-4" />
           <Skeleton className="h-[400px] w-full" />
-          <p>Cargando panel de administración...</p> {/* Mensaje para el usuario */}
+          <p>Cargando panel de administración...</p>
         </div>
       </MainLayout>
     );
@@ -694,7 +711,7 @@ export default function AdminPanelPage() {
                     <Filter className="h-4 w-4" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right">
+                <SheetContent side="right" className="w-80">
                   <SheetHeader>
                     <SheetTitle>Filtros</SheetTitle>
                   </SheetHeader>
@@ -962,6 +979,7 @@ export default function AdminPanelPage() {
                         <span>{selectedUser.prestamosHistoricos}</span>
                       </div>
                       <div className="flex justify-between">
+                        <span className="text-muted-foreground">Multas Pendientes:</span>
                         <span className={selectedUser.multasPendientes > 0 ? "text-red-600 font-medium" : ""}>
                           {selectedUser.multasPendientes}
                         </span>
@@ -1124,25 +1142,25 @@ export default function AdminPanelPage() {
                     </Select>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex justify-end gap-3 mt-6">
-                <Button variant="outline" onClick={closeModals}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleEditUser} disabled={isLoadingAction}>
-                  {isLoadingAction ? (
-                    <>
-                      <Save className="h-4 w-4 mr-2 animate-spin" />
-                      Guardando...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Guardar Cambios
-                    </>
-                  )}
-                </Button>
+                <div className="flex justify-end gap-3 mt-6">
+                  <Button variant="outline" onClick={closeModals}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleEditUser} disabled={isLoadingAction}>
+                    {isLoadingAction ? (
+                      <>
+                        <Save className="h-4 w-4 mr-2 animate-spin" />
+                        Guardando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Guardar Cambios
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
