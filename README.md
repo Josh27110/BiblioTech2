@@ -1,272 +1,275 @@
-# Sistema de Gestión de Biblioteca
+# Sistema de Gestión de Biblioteca 📖
 
-¡Bienvenido al repositorio del Sistema de Gestión de Biblioteca! Esta es una plataforma digital diseñada para optimizar y automatizar los procesos clave de una biblioteca: el préstamo de materiales, el control de usuarios, la administración del catálogo y la aplicación de sus políticas internas.
+<p align="center">
+  <strong>Una plataforma web moderna para la administración eficiente de bibliotecas.</strong>
+</p>
 
-El sistema está construido con una arquitectura web moderna, con un frontend en Next.js (React) y un backend en Flask (Python), utilizando MySQL como base de datos.
+<p align="center">
+  <img src="https://img.shields.io/badge/estado-en%20desarrollo-yellow" alt="Estado del Proyecto">
+  <img src="https://img.shields.io/badge/licencia-MIT-blue" alt="Licencia MIT">
+</p>
+
+## Resumen del Proyecto
+
+¡Bienvenido al **Sistema de Gestión de Biblioteca**! Esta es una plataforma digital diseñada para optimizar y automatizar los procesos clave de una biblioteca: el préstamo de materiales, el control de usuarios, la administración del catálogo y la aplicación de políticas internas.
+
+El sistema está construido con una arquitectura web moderna, utilizando **Next.js (React)** para el frontend y **Flask (Python)** para el backend, con **MySQL** como base de datos.
+
+## 📋 Tabla de Contenidos
+
+1.  [📚 Características Principales](#-características-principales)
+2.  [🚀 Tecnologías Utilizadas](#-tecnologías-utilizadas)
+3.  [⚙️ Requisitos Previos](#️-requisitos-previos)
+4.  [🏁 Instalación y Ejecución](#-instalación-y-ejecución)
+5.  [📂 Estructura del Proyecto](#-estructura-del-proyecto)
+6.  [🔒 Credenciales de Prueba](#-credenciales-de-prueba)
+7.  [🤝 Contribuciones](#-contribuciones)
+8.  [📄 Licencia](#-licencia)
 
 ## 📚 Características Principales
 
-Este sistema ofrece funcionalidades diferenciadas y seguras para tres roles de usuario (Administrador, Bibliotecario y Lector), garantizando que cada uno acceda únicamente a las funcionalidades que le corresponden.
+El sistema ofrece funcionalidades seguras y diferenciadas para tres roles de usuario, garantizando un acceso controlado a las operaciones.
 
-* **Administrador:** Encargado de la gestión de alto nivel de los usuarios del sistema, con la capacidad de agregar, editar, visualizar, eliminar y buscar cuentas. También establece parámetros globales como los montos de las multas por día de retraso y los periodos de préstamo estándar. No interviene en las operaciones diarias de la biblioteca.
-* **Bibliotecario:** Responsable de los procesos operativos diarios, como la gestión de préstamos, la aplicación de multas, el control de la disponibilidad de material y la actualización del inventario en el catálogo. Utiliza el sistema como su principal herramienta de trabajo para interactuar con los lectores y el catálogo.
-* **Lector:** El usuario final, quien podrá registrarse, acceder al sistema, solicitar préstamos, consultar el catálogo, renovar libros, pagar multas y visualizar su historial de actividades.
+### Roles de Usuario
 
-### Funcionalidades Específicas:
+* **👤 Administrador:**
+    * Gestión de alto nivel de cuentas de usuario (crear, editar, eliminar).
+    * Configuración de parámetros globales del sistema (ej. multas, periodos de préstamo).
+    * No participa en las operaciones diarias.
+* **🧑‍💼 Bibliotecario:**
+    * Responsable de las operaciones diarias de la biblioteca.
+    * Gestiona préstamos, devoluciones y aplicación de multas.
+    * Actualiza el inventario y el catálogo de materiales.
+* **🙋 Lector:**
+    * Usuario final del sistema.
+    * Puede registrarse, solicitar préstamos, renovar materiales y consultar su historial.
+    * Interactúa con el catálogo para buscar y encontrar materiales.
 
-* **Gestión de Usuarios:** Incluye el registro, autenticación, edición y eliminación de cuentas de usuario.
-* **Gestión de Materiales:** Permite agregar, actualizar, eliminar y visualizar los diferentes materiales del catálogo (libros, revistas, etc.).
-* **Gestión de Préstamos:** Contempla la solicitud, renovación, finalización y validación de los límites establecidos para los préstamos.
-* **Gestión de Multas:** Incluye la visualización y el registro del pago de multas.
-* **Consultas:** Facilita al usuario el acceso a su historial de préstamos y al catálogo de material disponible.
+### Módulos Principales
+
+* **Gestión de Usuarios:** Registro, autenticación, edición y eliminación de cuentas.
+* **Gestión de Materiales:** CRUD completo para libros, revistas y otros ítems del catálogo.
+* **Gestión de Préstamos:** Flujo completo de solicitud, renovación y devolución de materiales.
+* **Gestión de Multas:** Cálculo, visualización y registro de pagos de multas por retraso.
+* **Consultas e Historial:** Acceso para los lectores a su historial de actividades y al catálogo.
 
 ## 🚀 Tecnologías Utilizadas
 
-* **Frontend:**
-    * **Next.js:** Framework de React para aplicaciones web.
-    * **TypeScript:** Lenguaje de programación que añade tipado estático a JavaScript.
-    * **Tailwind CSS:** Framework de CSS para un desarrollo visual ágil.
-* **Backend:**
-    * **Python:** Lenguaje de programación principal.
-    * **Flask:** Micro-framework web para la API REST, seleccionado por su simplicidad y velocidad de desarrollo.
-    * **SQLAlchemy:** ORM (Object-Relational Mapper) para la interacción con la base de datos.
-    * **Flask-Migrate:** Herramienta para manejar migraciones de bases de datos.
-    * **Bcrypt:** Para el hash de contraseñas.
-    * **Flask-JWT-Extended:** Para la autenticación basada en JSON Web Tokens.
-* **Base de Datos:**
-    * **MySQL:** Sistema de gestión de base de datos relacional.
+| Componente    | Tecnología                                                                                                                                                                                                   | Descripción                                                                 |
+| :------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| **Frontend** | **Next.js (React), TypeScript, Tailwind CSS** | Para una interfaz de usuario moderna, reactiva y estilizada.                |
+| **Backend** | **Python, Flask, SQLAlchemy** | Para construir una API RESTful ligera, rápida y escalable.                  |
+| **Base de Datos** | **MySQL** | Sistema de gestión de base de datos relacional, robusto y confiable.        |
+| **Autenticación** | **Flask-JWT-Extended, Bcrypt** | Implementación de autenticación segura basada en JSON Web Tokens (JWT).     |
+| **Migraciones** | **Flask-Migrate** | Manejo de cambios en el esquema de la base de datos de forma versionada.    |
 
-## ⚙️ Requisitos del Sistema
+## ⚙️ Requisitos Previos
 
-Antes de comenzar, asegúrate de tener instalado lo siguiente en tu entorno de desarrollo. No asumas que ya los tienes; te guiaremos para instalarlos si es necesario.
+Asegúrate de tener instaladas las siguientes herramientas en tu entorno de desarrollo.
 
-* **Node.js** (versión 18 o superior)
-* **npm** o **pnpm** (gestores de paquetes de Node.js, pnpm es recomendado)
-* **Python** (versión 3.9 o superior)
-* **MySQL Server** (versión 8.0 o superior)
-* **Git**
+| Herramienta     | Versión Mínima | Comando de Verificación               | Instalación                                                                          |
+| :-------------- | :------------- | :------------------------------------ | :----------------------------------------------------------------------------------- |
+| **Node.js** | `18.0`         | `node -v`                             | [nodejs.org](https://nodejs.org/es/download)                                         |
+| **pnpm** | (Recomendado)  | `pnpm -v`                             | `npm install -g pnpm`                                                                |
+| **Python** | `3.9`          | `python --version`                    | [python.org](https://www.python.org/downloads/)                                      |
+| **MySQL Server**| `8.0`          | `mysql --version`                     | [dev.mysql.com/downloads/mysql](https://dev.mysql.com/downloads/mysql/)              |
+| **Git** | `2.0`          | `git --version`                       | [git-scm.com/downloads](https://git-scm.com/downloads)                               |
 
-### Cómo verificar si los tienes instalados:
-
-Abre tu terminal o línea de comandos y ejecuta los siguientes comandos:
-
-* **Node.js:**
-    ```bash
-    node -v
-    ```
-    Si no lo tienes, puedes descargarlo desde el sitio oficial: [nodejs.org](https://nodejs.org/es/download).
-
-* **npm:**
-    ```bash
-    npm -v
-    ```
-    Generalmente viene con Node.js.
-
-* **pnpm:**
-    ```bash
-    pnpm -v
-    ```
-    Si no lo tienes, puedes instalarlo con npm:
-    ```bash
-    npm install -g pnpm
-    ```
-
-* **Python:**
-    ```bash
-    python --version
-    ```
-    Si no lo tienes, puedes descargarlo desde el sitio oficial: [python.org](https://www.python.org/downloads/).
-
-* **MySQL Server:** Esto es más complejo de verificar directamente con un comando simple si no tienes un cliente CLI configurado. Puedes intentar:
-    ```bash
-    mysql --version
-    ```
-    Si no lo tienes, deberás descargar e instalar MySQL Community Server desde [dev.mysql.com/downloads/mysql/](https://dev.mysql.com/downloads/mysql/). Sigue las instrucciones de instalación para tu sistema operativo.
-
-* **Git:**
-    ```bash
-    git --version
-    ```
-    Si no lo tienes, puedes descargarlo desde el sitio oficial: [git-scm.com/downloads](https://git-scm.com/downloads).
+> **Nota sobre MySQL:** Verificar la versión de MySQL puede requerir tener el cliente de línea de comandos en tu PATH. Si el comando falla, pero sabes que está instalado, puedes continuar.
 
 ## 🏁 Instalación y Ejecución
 
-Sigue estos pasos para poner en marcha el sistema en tu máquina local.
+Sigue estos pasos para configurar y ejecutar el proyecto localmente.
 
 ### 1. Clonar el Repositorio
 
-Abre tu terminal o línea de comandos y ejecuta el siguiente comando para clonar el proyecto:
+### 2. Configuración del Backend (API REST)
 
-`bash
-git clone https://github.com/tu-usuario/nombre-del-repositorio.git
-cd nombre-del-repositorio
-2. Configuración de la Base de Datos MySQL
-Iniciar MySQL Server: Asegúrate de que tu servidor MySQL esté en ejecución. Si lo acabas de instalar, es probable que se inicie automáticamente o necesites iniciarlo manualmente desde los servicios de tu sistema operativo.
+Primero, configuraremos la base de datos y el servidor que proveerá los datos a la aplicación.
 
-Crear la Base de Datos: Abre un cliente MySQL (como MySQL Workbench, la línea de comandos mysql, o phpMyAdmin) y ejecuta el siguiente comando SQL para crear la base de datos biblioteca_db:
+#### a. Navegar a la carpeta del backend
+
+```bash
+cd backend
+b. Crear y activar un entorno virtual
+Bash
+
+# Crear el entorno virtual
+python -m venv venv
+
+# Activar en Windows (CMD/PowerShell)
+.\venv\Scripts\activate
+
+# Activar en macOS/Linux
+source venv/bin/activate
+c. Instalar dependencias de Python
+Bash
+
+pip install -r requirements.txt
+d. Configurar la Base de Datos y Variables de Entorno
+Inicia tu servidor MySQL.
+
+Crea la base de datos usando un cliente de MySQL (Workbench, DBeaver, etc.):
 
 SQL
 
 CREATE DATABASE biblioteca_db;
-Crear Usuario (Opcional pero recomendado): Para mayor seguridad, puedes crear un usuario específico para la aplicación en lugar de usar root. Ejecuta estos comandos SQL:
+(Recomendado) Crea un usuario dedicado para la aplicación:
 
 SQL
 
-CREATE USER 'biblio_user'@'localhost' IDENTIFIED BY 'your_strong_password';
+CREATE USER 'biblio_user'@'localhost' IDENTIFIED BY 'tu_contraseña_segura';
 GRANT ALL PRIVILEGES ON biblioteca_db.* TO 'biblio_user'@'localhost';
 FLUSH PRIVILEGES;
-Importante: Reemplaza 'your_strong_password' con una contraseña segura de tu elección. Recuerda esta contraseña.
+Crea un archivo .env en la carpeta backend/ y añade las siguientes variables:
 
-3. Configuración y Ejecución del Backend (API REST)
-Navegar a la Carpeta del Backend: Cambia al directorio donde se encuentra tu código Flask (asumo que es una carpeta llamada backend en la raíz del proyecto clonado, y que tu archivo run.py está dentro de ella).
+Code snippet
 
-Bash
+# Configuración de la Base de Datos (ajusta con tus credenciales)
+DATABASE_URL=mysql+pymysql://biblio_user:tu_contraseña_segura@localhost/biblioteca_db
 
-cd backend
-Crear un Entorno Virtual (Python): Es una buena práctica aislar las dependencias del proyecto para evitar conflictos con otras instalaciones de Python. Ejecuta:
+# Clave secreta para JWT (debe ser larga, aleatoria y única)
+JWT_SECRET_KEY=clave_secreta_muy_larga_y_aleatoria_para_jwt
+¡Importante! La JWT_SECRET_KEY es crucial para la seguridad. Usa un generador de cadenas aleatorias para crear un valor robusto.
 
-Bash
-
-python -m venv venv
-Activar el Entorno Virtual: Esto te permitirá instalar librerías solo para este proyecto.
-
-En Windows (Símbolo del Sistema / CMD):
+e. Ejecutar las Migraciones de la Base de Datos
+Estos comandos crearán las tablas del sistema en biblioteca_db según los modelos definidos en el código.
 
 Bash
 
-.\venv\Scripts\activate
-En Windows (PowerShell):
-
-PowerShell
-
-.\venv\Scripts\Activate.ps1
-En macOS / Linux (Bash / Zsh):
-
-Bash
-
-source venv/bin/activate
-Verás (venv) al inicio de tu línea de comandos si el entorno virtual se activó correctamente.
-
-Instalar Dependencias: Instala todas las librerías necesarias para el backend desde el archivo requirements.txt.
-
-Bash
-
-pip install -r requirements.txt
-Nota: Si el archivo requirements.txt no existe o está incompleto, puedes instalar las principales dependencias manualmente:
-
-Bash
-
-pip install Flask Flask-SQLAlchemy Flask-Migrate Flask-Bcrypt Flask-JWT-Extended PyMySQL
-Configurar las Variables de Entorno: Crea un archivo llamado .env en la raíz de tu carpeta del backend (al mismo nivel que tu run.py o la carpeta app principal de Flask) y añade las siguientes variables. Asegúrate de reemplazar los marcadores de posición.
-
-# Configuración de la Base de Datos
-DATABASE_URL=mysql+pymysql://biblio_user:your_strong_password@localhost/biblioteca_db
-
-# Configuración de JWT (JSON Web Token)
-JWT_SECRET_KEY=super_secret_jwt_key_replace_this_with_a_long_random_string_and_unique_value
-DATABASE_URL: Usa el biblio_user y la your_strong_password que configuraste en el paso 2 de MySQL.
-
-JWT_SECRET_KEY: Debe ser una cadena larga, aleatoria y única para la seguridad de tus tokens. Puedes generar una en línea o usar alguna herramienta.
-
-Inicializar y Ejecutar Migraciones de la Base de Datos: Estos comandos de Flask-Migrate crearán las tablas necesarias en tu base de datos MySQL según tus modelos de Python.
-
-Bash
-
-flask db init
-flask db migrate -m "Initial database setup"
+flask db init      # Ejecutar solo la primera vez
+flask db migrate -m "Configuración inicial de la base de datos"
 flask db upgrade
-Ejecutar el Servidor Backend: Inicia el servidor Flask.
-
+f. Ejecutar el Servidor Backend
 Bash
 
 python run.py
-El backend debería estar funcionando y escuchando peticiones en http://127.0.0.1:5000 (o http://localhost:5000). Deja esta terminal abierta.
+El servidor backend estará ahora corriendo en http://127.0.0.1:5000. Mantén esta terminal abierta.
 
-4. Configuración y Ejecución del Frontend (Next.js)
-Navegar a la Carpeta del Frontend: Abre una nueva terminal (mantén la del backend ejecutándose en la primera terminal) y navega a la carpeta de tu aplicación Next.js (asumo que es una carpeta llamada frontend en la raíz del proyecto clonado).
+3. Configuración del Frontend (Next.js)
+Abre una nueva terminal para configurar y ejecutar la interfaz de usuario.
 
+a. Navegar a la carpeta del frontend
 Bash
 
+# Desde la raíz del proyecto
 cd frontend
-(Nota: Ajusta frontend si tu estructura de carpetas es diferente. Asumo que el archivo package.json de Next.js está en un directorio llamado frontend o similar en la raíz del proyecto clonado.)
-
-Instalar Dependencias: Instala las librerías de JavaScript necesarias para el frontend. Usaremos pnpm como se sugiere en tu pnpm-lock.yaml.
-
+b. Instalar dependencias de JavaScript
 Bash
 
+# Usando pnpm (recomendado)
 pnpm install
-o si prefieres npm:
 
-Bash
-
+# O si prefieres npm
 npm install
-Configurar Variables de Entorno del Frontend: Crea un archivo .env.local en la raíz de tu carpeta del frontend y añade la URL base de tu API de backend:
+c. Configurar Variables de Entorno del Frontend
+Crea un archivo llamado .env.local en la carpeta frontend/ y añade la URL de la API:
+
+Code snippet
 
 NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
-Ejecutar la Aplicación Frontend: Inicia el servidor de desarrollo de Next.js.
-
+d. Ejecutar la Aplicación Frontend
 Bash
 
+# Usando pnpm
 pnpm dev
-o si usas npm:
 
-Bash
-
+# O si usas npm
 npm run dev
-La aplicación frontend debería abrirse en tu navegador web predeterminado en http://localhost:3000.
+La aplicación frontend estará disponible en tu navegador en http://localhost:3000.
 
-🔒 Roles y Credenciales de Prueba
-Una vez que la aplicación esté funcionando, puedes registrarte como "Lector" directamente desde la interfaz de usuario.
+📂 Estructura del Proyecto
+.
+├── backend/            # Aplicación Flask (API REST)
+│   ├── app/            # Lógica de la aplicación
+│   ├── migrations/     # Archivos de migración de la BD
+│   ├── venv/           # Entorno virtual de Python
+│   ├── .env            # Variables de entorno (NO versionar)
+│   └── requirements.txt# Dependencias de Python
+└── frontend/           # Aplicación Next.js (UI)
+    ├── app/            # Rutas y componentes de la UI (App Router)
+    ├── public/         # Archivos estáticos
+    ├── node_modules/   # Dependencias de Node
+    ├── .env.local      # Variables de entorno locales (NO versionar)
+    └── package.json    # Dependencias y scripts de Node
+🔒 Credenciales de Prueba
+Una vez que la aplicación esté funcionando, puedes registrarte como "Lector" desde la interfaz. Para otros roles, puedes crearlos desde una cuenta de administrador o insertarlos directamente en la base de datos para el desarrollo inicial.
 
-Para otros roles (Bibliotecario, Administrador), necesitarás crearlos inicialmente a través del sistema (si el rol de Administrador ya existe) o directamente en la base de datos para los primeros usuarios. Para fines de prueba y desarrollo inicial, aquí hay algunas credenciales de ejemplo que podrías usar:
+Rol
 
-Lector (ejemplo para registro):
+Email
 
-Email: lector_prueba@biblioteca.com
+Contraseña
 
-Contraseña: password123
-(Puedes registrarte con tus propios datos desde la UI).
+Notas
 
-Bibliotecario (ejemplo, si lo creas manualmente o vía un admin):
+Lector
 
-Email: bibliotecario@biblioteca.com
+lector_prueba@email.com
 
-Contraseña: biblio123
+password123
 
-Administrador (ejemplo, si lo creas manualmente):
+Puedes registrarte con tus propios datos.
 
-Email: admin@biblioteca.com
+Bibliotecario
 
-Contraseña: admin123
+bibliotecario@email.com
 
-Importante: Es muy recomendable cambiar estas credenciales por defecto después de la instalación inicial o usar un script de inicialización de datos para poblar la base de datos de forma segura para entornos de producción.
+biblio123
 
-🤝 Contribución
-Si deseas contribuir a este proyecto, por favor, sigue estos pasos:
+Debe ser creado por un Administrador.
 
-Haz un "fork" de este repositorio.
+Administrador
 
-Crea una nueva rama para tu característica o corrección de error:
+admin@email.com
+
+admin123
+
+Generalmente es el primer usuario creado.
+
+
+Export to Sheets
+Advertencia de Seguridad: Estas credenciales son solo para fines de desarrollo. Cámbialas inmediatamente en un entorno de producción o utiliza un script de seeding para poblar la base de datos de forma segura.
+
+🤝 Contribuciones
+Si deseas contribuir a este proyecto, ¡eres bienvenido! Por favor, sigue estos pasos:
+
+Haz un Fork de este repositorio.
+
+Crea una nueva rama para tu funcionalidad o corrección:
 
 Bash
 
-git checkout -b feature/nombre-de-tu-caracteristica-o-bugfix
-Realiza tus cambios y commitea con un mensaje descriptivo:
+git checkout -b feat/nombre-de-la-funcionalidad
+Realiza tus cambios y haz commit siguiendo un estilo convencional:
 
 Bash
 
-git commit -m 'feat: Añade nueva característica que hace X'
-o
+git commit -m 'feat: Añade un nuevo módulo de reportes'
+Empuja tus cambios a tu fork:
 
 Bash
 
-git commit -m 'fix: Corrige error en el módulo Y'
-Empuja tus cambios a la rama remota de tu fork:
-
-Bash
-
-git push origin feature/nombre-de-tu-caracteristica-o-bugfix
-Abre un Pull Request desde tu repositorio fork hacia el repositorio original, explicando tus cambios.
+git push origin feat/nombre-de-la-funcionalidad
+Abre un Pull Request hacia la rama main del repositorio original.
 
 📄 Licencia
-Este proyecto está bajo la Licencia MIT. Consulta el archivo LICENSE en la raíz del repositorio para más detalles.
+Este proyecto está distribuido bajo la Licencia MIT. Consulta el archivo LICENSE para más detalles.
+
+
+
+
+
+
+
+
+
+
+
+
+Video
+
+Deep Research
+
+Canvas
+
